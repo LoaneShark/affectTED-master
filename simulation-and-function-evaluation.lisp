@@ -1210,8 +1210,8 @@
 		  (ans (check-fact-in-kb wf kb is-world-kb))
 		 )
 
-;(format t "wff is ~a ~%" wf)
-(setq *is-actual* 'NIL)
+		;(format t "wff is ~a ~%" wf)
+		(setq *is-actual* 'NIL)
 
 
 		(cond	((eq ans 'T)
@@ -1386,7 +1386,7 @@
 					(cond ((eq curr-ans 'UNKNOWN)
 							(format t "~%Your assertion ~a has an unknown truth value in the simulated world so it is not added under the closed world assumption.~%" curr-tell)
 						  )
-						  (t ;(eq curr-ans 'NIL)
+						  ((eq curr-ans 'NIL) ;t
 							(format t "~%The negation of your assertion ~a is true in the simulated world so your assertion is not added to avoid introducing inconsistency.~%" curr-tell)
 						  )
 					)

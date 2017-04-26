@@ -27,6 +27,13 @@
   '((is_hungry_to_degree AG 4.0)
 	(is_thirsty_to_degree AG 2.0)
     (is_tired_to_degree AG 0.0)
+    ; The following correspond to the OCEAN traits, ranging across +/- 5
+    (is_open AG 0.0)
+    (is_conscientious AG 0.0)
+    (is_extravert AG 5.0)
+    (is_agreeable AG 0.0)
+    (is_neurotic AG 0.0)
+
     (can_talk guru)
     (is_at guru grove)
     (is_at juice3 plaza)  
@@ -239,7 +246,7 @@
 				(knows USER (that (answer_to_whq? ?q)))
 			  )
 	:time-required 1
-	:value 10
+	:value 20
 	)
 )
 
@@ -491,15 +498,16 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
-	(make-op :name 'ask+whether :pars '(?x ?y ?z)
-	:preconds '( (is_at AG ?z) 
+	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z)
+	:preconds '( (is_extravert AG ?e)
+				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
 				 (knows ?x (whether ?y))
 				 (not (knows AG (whether ?y))) )
 	:effects '( (knows AG (whether ?y)) )
 	:time-required 1
-	:value 5 
+	:value '(+ 5 ?e) 
 	)
 )
 
@@ -509,8 +517,9 @@
 ;; This is the `actual' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether.actual 
-	(make-op.actual :name 'ask+whether.actual :pars '(?x ?y ?z)
-	:startconds '( (is_at AG ?z) 
+	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z)
+	:startconds '( (is_extravert AG ?e)
+				   (is_at AG ?z) 
 				   (is_at ?x ?z) 
 				   (can_talk ?x) 
 				   (knows ?x (whether ?y))
