@@ -136,9 +136,9 @@
 			((> c 0.75 ) (list (cons 6 *operators*) (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*)))
 			((> c 0.5  ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*)))
 			((> c 0.25 ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) ))
+			((< c -0.75) (list (cons 2 *operators*) (cons 1 *operators*) ))
+			((< c -0.50) (list (cons 3 *operators*) (cons 2 *operators*) ))
 			((< c -0.25) (list (cons 3 *operators*) (cons 2 *operators*) (cons 1 *operators*) ))
-			((< c -0.50) (list (cons 3 *operators*) (cons 2 *operators*)))
-			((< c -0.75) (list (cons 2 *operators*) (cons 1 *operators*)))
 			(t  		 (list (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*) )))))
 
 (setq *search-beam* (generate-search-beam))
