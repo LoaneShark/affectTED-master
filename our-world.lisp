@@ -348,6 +348,47 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This evaluation function returns the numeric distance from location arg
+;; x to location arg y along the path arg z. This function is called by 
+;; functions walk.actual and walk.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun distance_from+to+on? (x y z)
+    (let    (result pt1 pt2 units index1 index2 str)
+            ; If both x and y are named road points, simply do a look-up.
+        (if (and (evalFunctionPredicate (cons 'point (list x))) (evalFunctionPredicate (cons 'point (list y))))
+            (dolist (triple (get x 'next))
+                (when (and (eq z (first triple)) (eq y (second triple)))
+                    (setq result (third triple))
+                    
+                    (return-from distance_from+to+on? result)
+                )
+            )   
+            ; Otherwise, x is of the form (the_pt+units_from+towards+on_road? ?d ?a ?b ?r), 
+            ; and parse the result to get the distance.
+            (progn
+                (if (atom x)
+                    (setq str (string x))
+                    (setq str (apply (car x) (cdr x))); (string x))
+                )
+                (setq index1 (search "PT_" str))
+                (setq index2 (search "_UNITS" str))
+                (setq units (parse-integer (subseq str (+ index1 3) index2)))
+                (setq index1 (search "FROM_" str))
+                (setq index2 (search "_TOWARDS" str))
+                (setq pt1 (INTERN (string-upcase (subseq str (+ index1 5) index2))))
+                (setq index1 (+ index2 9))
+                (setq index2 (search "_ON" str))
+                (setq pt2 (INTERN (string-upcase (subseq str index1 index2))))
+                (if (and (eq pt1 x) (eq pt2 y))
+                    (return-from distance_from+to+on? (- (distance_from+to+on? pt1 pt2 z) units))
+                    (return-from distance_from+to+on? units)
+                )
+            )
+        )
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; With operator walk, AG walks from point ?x to point ?y on road ?z, with 
 ;; initial fatigue level ?f, assuming speed of one unit per time step.
 ;; This is the `model' version.
@@ -367,47 +408,6 @@
     :time-required '(distance_from+to+on? ?x ?y ?z)
     :value '(- 3 ?f)
     )
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; This evaluation function returns the numeric distance from location arg
-;; x to location arg y along the path arg z. This function is called by 
-;; functions walk.actual and walk.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun distance_from+to+on? (x y z)
-	(let	(result pt1 pt2 units index1 index2 str)
-			; If both x and y are named road points, simply do a look-up.
-		(if (and (evalFunctionPredicate (cons 'point (list x))) (evalFunctionPredicate (cons 'point (list y))))
-			(dolist (triple (get x 'next))
-				(when (and (eq z (first triple)) (eq y (second triple)))
-					(setq result (third triple))
-					
-					(return-from distance_from+to+on? result)
-				)
-			)	
-			; Otherwise, x is of the form (the_pt+units_from+towards+on_road? ?d ?a ?b ?r), 
-			; and parse the result to get the distance.
-			(progn
-				(if (atom x)
-					(setq str (string x))
-					(setq str (apply (car x) (cdr x))); (string x))
-				)
-				(setq index1 (search "PT_" str))
-				(setq index2 (search "_UNITS" str))
-				(setq units (parse-integer (subseq str (+ index1 3) index2)))
-				(setq index1 (search "FROM_" str))
-				(setq index2 (search "_TOWARDS" str))
-				(setq pt1 (INTERN (string-upcase (subseq str (+ index1 5) index2))))
-				(setq index1 (+ index2 9))
-				(setq index2 (search "_ON" str))
-				(setq pt2 (INTERN (string-upcase (subseq str index1 index2))))
-				(if (and (eq pt1 x) (eq pt2 y))
-					(return-from distance_from+to+on? (- (distance_from+to+on? pt1 pt2 z) units))
-					(return-from distance_from+to+on? units)
-				)
-			)
-		)
-	)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -489,7 +489,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq eat 
 	(make-op :name 'eat :pars '(?h ?x ?y) ; level of hunger ?h
-	:preconds '( (is_hungry_to_degree AG ?h) 
+	:preconds '( (is_hungry_to_degree AG ?h)
 				 (>= ?h 2.0)
 				 (is_at AG ?y) 
 				 (is_at ?x ?y) 
@@ -578,16 +578,19 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
-	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z)
+	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z ?h)
 	:preconds '( (is_extroverted_to_degree AG ?e)
 				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
 				 (knows ?x (whether ?y))
-				 (not (knows AG (whether ?y))) )
-	:effects '( (knows AG (whether ?y)) )
+				 (not (knows AG (whether ?y)))
+                 (is_happy_to_degree AG ?h) )
+	:effects '( (knows AG (whether ?y))
+                (is_happy_to_degree AG (min 5.0 (+ ?e ?h))) 
+                (not (is_happy_to_degree AG ?h)) )
 	:time-required 1
-	:value '(+ 5 ?e) 
+	:value '(* 5 (+ 1 ?e))
 	)
 )
 
@@ -597,16 +600,18 @@
 ;; This is the `actual' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether.actual 
-	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z)
+	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z ?h)
 	:startconds '( (is_extroverted_to_degree AG ?e)
 				   (is_at AG ?z) 
 				   (is_at ?x ?z) 
 				   (can_talk ?x) 
 				   (knows ?x (whether ?y))
-				   (not (knows AG (whether ?y))) )
+				   (not (knows AG (whether ?y)))
+                   (is_happy_to_degree AG ?h) )
 	:stopconds '( (knows AG (whether ?y)) )
-	:deletes '( )
-	:adds '( (knows AG (whether ?y)) )
+	:deletes '( (is_happy_to_degree AG ?#1) )
+	:adds '( (knows AG (whether ?y))
+             (is_happy_to_degree AG (min 5.0 (+ ?e ?h))) )
 	)
 )
 

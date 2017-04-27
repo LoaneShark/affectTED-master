@@ -26,7 +26,7 @@
 ;; Default values
 (setf (gethash 'O *traits*) 0.0)
 (setf (gethash 'C *traits*) 0.0)
-(setf (gethash 'E *traits*) 0.0)
+(setf (gethash 'E *traits*) 1.0)
 (setf (gethash 'A *traits*) 0.0)
 (setf (gethash 'N *traits*) 0.0)
 (load "our-world.lisp")
