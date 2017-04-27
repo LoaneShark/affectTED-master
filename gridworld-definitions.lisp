@@ -33,6 +33,9 @@
 ; will become a list of general facts about object types, and
 ; possibly other non-unit Horn clauses added by the user                         
                                       
+(defparameter *traits* (make-hash-table :test #'equal))
+; Table containing the traits of the agent
+
 (defparameter *extra-initial-knowledge* (make-hash-table :test #'equal)) 
 ; Extra initial knowledge that may be supplied to AG when the initial 
 ; place-obj is done for object AG. (It is "extra" in the sense that AG
