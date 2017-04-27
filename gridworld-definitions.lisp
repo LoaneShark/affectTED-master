@@ -35,6 +35,20 @@
                                       
 (defparameter *traits* (make-hash-table :test #'equal))
 ; Table containing the traits of the agent
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Openness: Likes variety & difference. Values different traits from its own
+;;           and actions that it has not performed before. 
+;; Conscientiousness: Plans actions strongly and dislikes spontaneity, or behavior
+;;           it deems disruptive. Neat, systematic and wary, strongly dislikes
+;;           opposing behavior.
+;; Extraversion: Enjoys and seeks out interaction with others. Enjoys any (nonhostile)
+;;           form of interaction with other agents, and the more the merrier. Become
+;;           upset when without interaction for prolonged periods of time.
+;; Agreeableness: Kind, empathetic, wants to help others, tries to cooperate and 
+;;           enjoys seeing others succeed. Exhibits selfless decisionmaking.
+;; Neuroticism: "Moodiness" or anxiety, will respond worse to stress or hostile
+;;           behavior, interprets threats with much greater severity.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *extra-initial-knowledge* (make-hash-table :test #'equal)) 
 ; Extra initial knowledge that may be supplied to AG when the initial 
