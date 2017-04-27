@@ -305,28 +305,6 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; With operator walk, AG walks from point ?x to point ?y on road ?z, with 
-;; initial fatigue level ?f, assuming speed of one unit per time step.
-;; This is the `model' version.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq walk 
-	(make-op :name 'walk :pars '(?x ?y ?z ?f)
-	:preconds '((is_at AG ?x)        
-				(is_on ?x ?z)        
-				(is_on ?y ?z) (point ?y)
-				(navigable ?z)
-                (is_tired_to_degree AG ?f) )
-    :effects '((is_at AG ?y) 
-    		   (not (is_at AG ?x))
-               ;(is_tired_to_degree AG (+ ?f 0.5))
-               (is_tired_to_degree AG (+ ?f (* 0.5 (distance_from+to+on? ?x ?y ?z))))  
-               (not (is_tired_to_degree AG ?f)) )
-    :time-required '(distance_from+to+on? ?x ?y ?z)
-    :value '(- 3 ?f)
-    )
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This evaluation function returns the numeric distance from location arg
 ;; x to location arg y along the path arg z. This function is called by 
 ;; functions walk.actual and walk.
@@ -365,6 +343,28 @@
 			)
 		)
 	)
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; With operator walk, AG walks from point ?x to point ?y on road ?z, with 
+;; initial fatigue level ?f, assuming speed of one unit per time step.
+;; This is the `model' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq walk 
+	(make-op :name 'walk :pars '(?x ?y ?z ?f)
+	:preconds '((is_at AG ?x)        
+				(is_on ?x ?z)        
+				(is_on ?y ?z) (point ?y)
+				(navigable ?z)
+                (is_tired_to_degree AG ?f) )
+    :effects '((is_at AG ?y) 
+    		   (not (is_at AG ?x))
+               ;(is_tired_to_degree AG (+ ?f 0.5))
+               (is_tired_to_degree AG (+ ?f (* 0.5 (distance_from+to+on? ?x ?y ?z))))  
+               (not (is_tired_to_degree AG ?f)) )
+    :time-required '(distance_from+to+on? ?x ?y ?z)
+    :value '(- 3 ?f)
+    )
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
