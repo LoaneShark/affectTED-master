@@ -50,6 +50,9 @@
 ;;           behavior, interprets threats with much greater severity.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defparameter *vitals* (make-hash-table :test #'equal))
+; Table with vital signs for checking death
+
 (defparameter *extra-initial-knowledge* (make-hash-table :test #'equal)) 
 ; Extra initial knowledge that may be supplied to AG when the initial 
 ; place-obj is done for object AG. (It is "extra" in the sense that AG

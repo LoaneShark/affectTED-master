@@ -863,8 +863,10 @@
 (defun handleExtOps ()
 	(let	((is-fire 'NIL) 
 			 (is-rain 'NIL) 
+			 (is-die 'NIL)
 			 (is-fire-handled 'NIL)
 			 (is-rain-handled 'NIL)
+			 (is-die-handled 'NIL)
 			 (is-abn 'NIL) 
 			 (is-terminated 'NIL) op name new-terms 
 			 (new-wff-htable (state-node-wff-htable *curr-state-node*))
@@ -888,19 +890,24 @@
 			(setq stopconds (op.actual-stopconds (eval op)))
 			(setq is-abn 'NIL)
 			(setq is-terminated 'NIL)
-			
-			(if (equal name 'fire.actual)
+
+			(if (equal name 'die.actual)
 				(progn 
-					(setq is-fire 'T)
-					(setq is-fire-handled 'T)
-					(setq is-rain 'NIL)
+					(setq is-die 'T)
+					(setq is-die-handled 'T)
 				)
-				(when (equal name 'rain.actual)
-					(setq is-rain 'T)
-					(setq is-rain-handled 'T)
-					(setq is-fire 'NIL)
-				)
-			)
+				(if (equal name 'fire.actual)
+					(progn 
+						(setq is-fire 'T)
+						(setq is-fire-handled 'T)
+						(setq is-rain 'NIL)
+					)
+					(when (equal name 'rain.actual)
+						(setq is-rain 'T)
+						(setq is-rain-handled 'T)
+						(setq is-fire 'NIL)
+					)
+				))
 			
 			; Evaluate whether the termination conditions of the current 
 			; active event are true in the world KB.
@@ -958,17 +965,23 @@
 				
 				; Extend the current active event for another time step since 
 				; none of its termination conditions are true in the world KB.
-				(if	(eq 'T is-fire)
-					(handleFireAndRain fire.actual 'T)
-					(when (eq 'T is-rain)
-						(handleFireAndRain rain.actual 'T)
-					)
-				)
+				(if	(eq 'T is-die)
+					(handleFireAndRain die.actual 'T)
+					(if	(eq 'T is-fire)
+						(handleFireAndRain fire.actual 'T)
+						(when (eq 'T is-rain)
+							(handleFireAndRain rain.actual 'T)
+						)
+					))
 				
 			); end of if-then-else clause for 
 			
 		); end of processing active external events in *event-queue*
 
+		; Handle the external death operator only if it has not been handled.
+		(when (eq 'NIL is-die-handled)
+			(handleFireAndRain die.actual 'NIL)
+		)
 		; Handle the external fire operator only if it has not been handled.
 		(when (eq 'NIL is-fire-handled)
 			(handleFireAndRain fire.actual 'NIL)

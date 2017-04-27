@@ -19,16 +19,45 @@
 (def-object 'wolf '(is_animate is_dangerous))
 (def-object 'speaker '(is_inanimate is_loud))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Openness: Likes variety & difference. Values different traits from its own
+;;           and actions that it has not performed before. 
+;; Conscientiousness: Plans actions strongly and dislikes spontaneity, or behavior
+;;           it deems disruptive. Neat, systematic and wary, strongly dislikes
+;;           opposing behavior.
+;; Extraversion: Enjoys and seeks out interaction with others. Enjoys any (nonhostile)
+;;           form of interaction with other agents, and the more the merrier. Become
+;;           upset when without interaction for prolonged periods of time.
+;; Agreeableness: Kind, empathetic, wants to help others, tries to cooperate and 
+;;           enjoys seeing others succeed. Exhibits selfless decisionmaking.
+;; Neuroticism: "Moodiness" or anxiety, will respond worse to stress or hostile
+;;           behavior, interprets threats with much greater severity.
+;;
+;; The following values correspond to the above OCEAN traits, ranging across +/- 1
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setf (gethash 'O *traits*) 0.0)
+(setf (gethash 'C *traits*) 0.0)
+(setf (gethash 'E *traits*) 0.0)
+(setf (gethash 'A *traits*) 0.0)
+(setf (gethash 'N *traits*) 0.0)
+
+(setf (gethash 'hunger *vitals*) 4.0)
+(setf (gethash 'thirst *vitals*) 2.0)
+(setf (gethash 'fatigue *vitals*) 2.0)
+
 ;; Note that we create some "current facts" about
 ;; AG that are really about the situation at plaza;
 ;; this is just a way of ensuring that AG knows these
 ;; facts right at the outset.
-(place-object 'AG 'robot 'home 0  
+
+(place-object 'AG 'robot 'grove 0  
   nil ; no associated-things
   ; current facts
-  `((is_hungry_to_degree AG 4.0)
-	(is_thirsty_to_degree AG 2.0)
-    (is_tired_to_degree AG 0.0)
+  `((is_hungry_to_degree AG ,(gethash 'hunger *vitals*))
+    (is_thirsty_to_degree AG ,(gethash 'thirst *vitals*))
+    (is_tired_to_degree AG ,(gethash 'fatigue *vitals*))
+    (is_alive AG)
 
     ; OCEAN traits
     (is_open_to_degree AG ,(gethash 'O *traits*))
@@ -39,6 +68,7 @@
 
     ; Emotional state
     (is_happy_to_degree AG 0.0) ;valence
+    (is_bored AG)
 
     (can_talk guru)
     (is_at guru grove)
@@ -83,30 +113,30 @@
 )
 
 (place-object 'pizza3 'pizza 'home 0 
-	nil ; no associated-things
-	; current facts
-	'((is_edible pizza3) 
-	 )
+    nil ; no associated-things
+    ; current facts
+    '((is_edible pizza3) 
+     )
     nil ; propositional attitudes
 )
 
 (place-object 'juice3 'juice 'plaza 0 
-	nil ; no associated-things
-	; current facts
-	'((is_potable juice3) 
-	 )
+    nil ; no associated-things
+    ; current facts
+    '((is_potable juice3) 
+     )
     nil ; propositional attitudes
 )
 
 (place-object 'piano2 'instrument 'home 0 
-	nil ; no associated-things
-	'((is_playable piano2)
-	 )
+    nil ; no associated-things
+    '((is_playable piano2)
+     )
     nil ; propositional attitudes
 )
 
 (place-object 'guru 'expert 'grove 0 
-	nil ; no associated-things
+    nil ; no associated-things
     nil ; no current facts
     ; propositional attitudes
     '((knows guru (whether (is_potable juice3)))
@@ -114,7 +144,7 @@
 )
 
 (place-object 'guru_friendly 'expert 'plaza 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_friendly guru_friendly)
      )
@@ -123,7 +153,7 @@
 )
 
 (place-object 'guru_grumpy 'expert 'plaza 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_grumpy guru_grumpy)
      )
@@ -132,7 +162,7 @@
 )
 
 (place-object 'guru_injured 'expert 'grove 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_injured guru_injured)
      )
@@ -141,7 +171,7 @@
 )
 
 (place-object 'wolf1 'wolf 'cave 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_hungry wolf1)
      )
@@ -150,7 +180,7 @@
 )
 
 (place-object 'speaker2 'speaker 'garden 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_loud speaker2)
      )
@@ -159,7 +189,7 @@
 )
 
 (place-object 'pizza4 'pizza 'cave 0 
-	nil ; no associated-things
+    nil ; no associated-things
     ; current facts
     '((is_edible pizza4)
      )
@@ -171,18 +201,18 @@
 ; We omit this, as *occluded-preds* is currently already set in 
 ; "gridworld-definitions.lisp".
 
-(setq *operators* '(walk eat answer_user_ynq answer_user_whq sleep drink ask+whether play))
+(setq *operators* '(walk eat answer_user_ynq answer_user_whq sleep drink ask+whether play die play+with talk+with heal))
 
 (defun generate-search-beam ()
-	(let ((c (gethash 'C *traits*)))
-		(cond
-			((> c 0.75 ) (list (cons 6 *operators*) (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*)))
-			((> c 0.5  ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*)))
-			((> c 0.25 ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) ))
-			((< c -0.75) (list (cons 2 *operators*) (cons 1 *operators*) ))
-			((< c -0.50) (list (cons 3 *operators*) (cons 2 *operators*) ))
-			((< c -0.25) (list (cons 3 *operators*) (cons 2 *operators*) (cons 1 *operators*) ))
-			(t  		 (list (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*) )))))
+    (let ((c (gethash 'C *traits*)))
+        (cond
+            ((> c 0.75 ) (list (cons 6 *operators*) (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*)))
+            ((> c 0.5  ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*)))
+            ((> c 0.25 ) (list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) ))
+            ((< c -0.75) (list (cons 2 *operators*) (cons 1 *operators*) ))
+            ((< c -0.50) (list (cons 3 *operators*) (cons 2 *operators*) ))
+            ((< c -0.25) (list (cons 3 *operators*) (cons 2 *operators*) (cons 1 *operators*) ))
+            (t           (list (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*) )))))
 
 (setq *search-beam* (generate-search-beam))
 
@@ -194,11 +224,11 @@
 ;; This is the `actual' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq fire.actual 
-	(make-op.actual :name 'fire.actual :pars '()
-    :startconds '((not (there_is_rain))
-				  (= 3 (random 20))) ; 5% chance of fire starting
+    (make-op.actual :name 'fire.actual :pars '()
+    :startconds '(('NIL))
+                  ;(= 3 (random 20))) ; 5% chance of fire starting
     :starredStopConds '((= 1 (random 2)) ; 50% chance of stopping after starting
-						(there_is_rain))
+                        (there_is_rain))
     :starredDeletes '((there_is_a_fire))
     :starredAdds '((navigable PATH1) (navigable PATH2) (navigable PATH3) (navigable PATH4))
     :deletes '((navigable PATH1) (navigable PATH2) (navigable PATH3) (navigable PATH4))
@@ -213,14 +243,50 @@
 ;; This is the `actual' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq rain.actual 
-	(make-op.actual :name 'rain.actual :pars '()
-    :startconds '((= 1 (random 3))) ; 33% chance of rain starting
+    (make-op.actual :name 'rain.actual :pars '()
+    :startconds '(('NIL));(= 1 (random 3))) ; 33% chance of rain starting
     :starredStopConds '((= 2 (random 4))) ; 25% chance of stopping after starting
     :starredDeletes '((there_is_rain))
     :adds '((there_is_rain)) 
     )
 )
 
+(defun is_dead? ()
+    (if (>= (+ (gethash 'hunger *vitals*) (gethash 'thirst *vitals*) (gethash 'fatigue *vitals*)) 30.0)
+        'T
+        'NIL)
+    )
+
+(setq die
+    (make-op :name 'die :pars '(?u ?h ?f)
+        :preconds '((is_alive AG)
+                    (is_tired_to_degree AG ?f)
+                    (is_thirsty_to_degree AG ?h)
+                    (is_hungry_to_degree AH ?u)
+                    (>= (+ ?f ?h ?u) 30.0))
+        :effects '((is_dead AG)
+                    (not (is_alive AG)))
+        :time-required 1
+        :value -999
+        )
+    )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exogenous death operator. If hunger, thirst or fatigue exceed 10.0,
+;; agent will spontaneously die. Agent is aware of its potential mortality,
+;; and will try to avoid death at all costs. An agent with poor planning
+;; ability (low C stat) may be careless enough to die. 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq die.actual 
+    (make-op.actual :name 'die.actual :pars '()
+    :startconds '((is_alive AG)
+                  (is_dead?))
+    :starredStopConds '((is_dead AG))
+    :stopconds '((is_dead AG))
+    :deletes '((is_alive AG))
+    :adds '((is_dead AG)) 
+    )
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Function answer_to_ynq? returns a well-formed formula indicating whether 
 ;; or not the arg wff is currently in AG's KB, under the closed world 
@@ -663,4 +729,47 @@
     :adds '( (is_tired_to_degree AG (+ ?f (* 0.5 (elapsed_time?))))
              (is_thirsty_to_degree AG (+ ?h (* 0.5 (elapsed_time?)))) ) 
 	)
+)
+
+;; NEEDS TO BE FINISHED
+(setq play+with 
+    (make-op :name 'play+with :pars '(?x ?z) 
+    :preconds '( (is_alive AG)
+                 (is_bored AG)                
+                 (is_at AG ?z) 
+                 (is_at ?x ?z) 
+                 (is_thirsty_to_degree AG ?h)
+                 (is_tired_to_degree AG ?f) )
+    :effects '( (not (is_bored AG)) 
+                (not (is_thirsty_to_degree AG ?h))
+                (not (is_tired_to_degree AG ?f))
+                (is_thirsty_to_degree AG (+ ?h 0.5))
+                (is_tired_to_degree AG (+ ?f 0.5)) )
+    :time-required 1
+    :value 3
+    )
+)
+;; NEEDS TO BE FINISHED
+(setq talk+with 
+    (make-op :name 'talk+with :pars '(?x ?z) 
+    :preconds '( (is_alive AG)
+                 (is_at AG ?z) 
+                 (is_at ?x ?z) 
+                 (can_talk ?x) )
+    :effects '()
+    :time-required 1
+    :value 5
+    )
+)
+;; NEEDS TO BE FINISHED
+(setq heal 
+    (make-op :name 'heal :pars '(?x ?z) 
+    :preconds '( (is_alive AG)
+                 (is_at AG ?z) 
+                 (is_at ?x ?z) 
+                 (is_injured ?x) )
+    :effects '((not (is_injured ?x)))
+    :time-required 1
+    :value 5 
+    )
 )
