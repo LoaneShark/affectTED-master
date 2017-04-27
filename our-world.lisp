@@ -17,29 +17,6 @@
 (def-object 'juice '(is_inanimate is_potable (has_cost 2.0)))
 (def-object 'pizza '(is_inanimate is_edible (has_cost 5.0)))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Openness: Likes variety & difference. Values different traits from its own
-;;           and actions that it has not performed before. 
-;; Conscientiousness: Plans actions strongly and dislikes spontaneity, or behavior
-;;           it deems disruptive. Neat, systematic and wary, strongly dislikes
-;;           opposing behavior.
-;; Extraversion: Enjoys and seeks out interaction with others. Enjoys any (nonhostile)
-;;           form of interaction with other agents, and the more the merrier. Become
-;;           upset when without interaction for prolonged periods of time.
-;; Agreeableness: Kind, empathetic, wants to help others, tries to cooperate and 
-;;           enjoys seeing others succeed. Exhibits selfless decisionmaking.
-;; Neuroticism: "Moodiness" or anxiety, will respond worse to stress or hostile
-;;           behavior, interprets threats with much greater severity.
-;;
-;; The following values correspond to the above OCEAN traits, ranging across +/- 1
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf (gethash 'O *traits*) 0.0)
-(setf (gethash 'C *traits*) 0.0)
-(setf (gethash 'E *traits*) 0.0)
-(setf (gethash 'A *traits*) 0.0)
-(setf (gethash 'N *traits*) 0.0)
-
 ;; Note that we create some "current facts" about
 ;; AG that are really about the situation at plaza;
 ;; this is just a way of ensuring that AG knows these
@@ -50,7 +27,15 @@
   '((is_hungry_to_degree AG 4.0)
 	(is_thirsty_to_degree AG 2.0)
     (is_tired_to_degree AG 0.0)
-
+    ; The following correspond to the OCEAN traits, ranging across +/- 1
+    (is_open_to_degree AG 0.0)
+    (is_conscientious_to_degree AG 0.0)
+    (is_extroverted_to_degree AG 1.0)
+    (is_agreeable_to_degree AG 0.0)
+    (is_neurotic_to_degree AG 0.0)
+    ; Emotion
+    ; Valence, ranging from +/- 5
+    (is_happy_to_degree AG 0.0)
 
     (can_talk guru)
     (is_at guru grove)
@@ -120,13 +105,9 @@
 ; "gridworld-definitions.lisp".
 
 (setq *operators* '(walk eat answer_user_ynq answer_user_whq sleep drink ask+whether play))
-(setq *search-beam* 
+(setq *search-beam*
 ;(list (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) ))
-		(list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) ))
-
-(defun generate-search-beam
-	(let ((c (gethash 'C *traits*)))
-		))
+	(list (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*) ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Operator fire.actual is the exogenous fire operator.  As long as there 
@@ -521,7 +502,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
 	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z)
-	:preconds '( (is_extravert AG ?e)
+	:preconds '( (is_extroverted_to_degree AG ?e)
 				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
@@ -540,7 +521,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether.actual 
 	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z)
-	:startconds '( (is_extravert AG ?e)
+	:startconds '( (is_extroverted_to_degree AG ?e)
 				   (is_at AG ?z) 
 				   (is_at ?x ?z) 
 				   (can_talk ?x) 
