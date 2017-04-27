@@ -47,10 +47,19 @@
 (place-object 'AG 'robot 'home 0  
   nil ; no associated-things
   ; current facts
-  '((is_hungry_to_degree AG 4.0)
+  `((is_hungry_to_degree AG 4.0)
 	(is_thirsty_to_degree AG 2.0)
     (is_tired_to_degree AG 0.0)
 
+    ; OCEAN traits
+    (is_open_to_degree AG ,(gethash 'O *traits*))
+    (is_conscientious_to_degree AG ,(gethash 'C *traits*))
+    (is_extroverted_to_degree AG ,(gethash 'E *traits*))
+    (is_agreeable_to_degree AG ,(gethash 'A *traits*))
+    (is_neurotic_to_degree AG ,(gethash 'N *traits*))
+
+    ; Emotional state
+    (is_happy_to_degree AG 0.0) ;valence
 
     (can_talk guru)
     (is_at guru grove)
