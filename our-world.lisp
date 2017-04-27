@@ -10,12 +10,14 @@
 ;; Date: Jan. 2010 by Daphne Liu
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def-roadmap '(home grove plaza) '((path1 home 3 grove) (path2 home 2 plaza)))
+(def-roadmap '(home grove plaza cave garden) '((path1 home 3 grove) (path2 home 2 plaza) (path3 grove 2 cave) (path4 home 1 garden)))
 (def-object 'robot '(is_animate can_talk))
 (def-object 'expert '(is_animate can_talk))
 (def-object 'instrument '(is_inanimate is_playable))
 (def-object 'juice '(is_inanimate is_potable (has_cost 2.0)))
 (def-object 'pizza '(is_inanimate is_edible (has_cost 5.0)))
+(def-object 'wolf '(is_animate is_dangerous))
+(def-object 'speaker '(is_inanimate is_loud))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,6 +65,16 @@
 
     (can_talk guru)
     (is_at guru grove)
+
+    (can_talk guru_injured)
+    (is_at guru_injured grove)
+
+    (can_talk guru_grumpy)
+    (is_at guru_grumpy plaza)
+
+    (can_talk guru_friendly)
+    (is_at guru_friendly plaza)
+
     (is_at juice3 plaza)  
      ;Note that right after the call to function initialize-state-node, 
      ;AG knows (is_edible pizza3) and (is_playable piano2). The reason is
@@ -82,6 +94,7 @@
   ; propositional attitudes
   '((knows AG (whether (is_playable piano2)))
     (knows AG (whether (is_edible pizza3)))
+    (knows AG (whether (is_injured guru_injured)))
     (knows AG (that (knows guru (whether (is_potable juice3))))) 
     ;merely (knows guru (whether (is_potable juice3))) won't work, because (knows guru ...) is first
     ;deposited into *protected-facts* and *world-facts* via place-object, and then later filtered 
@@ -123,6 +136,59 @@
      )
 )
 
+(place-object 'guru_friendly 'expert 'plaza 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_friendly guru_friendly)
+     )
+    ; propositional attitudes
+    nil
+)
+
+(place-object 'guru_grumpy 'expert 'plaza 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_grumpy guru_grumpy)
+     )
+    ; propositional attitudes
+    nil
+)
+
+(place-object 'guru_injured 'expert 'grove 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_injured guru_injured)
+     )
+    ; propositional attitudes
+    nil
+)
+
+(place-object 'wolf1 'wolf 'cave 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_hungry wolf1)
+     )
+    ; propositional attitudes
+    nil
+)
+
+(place-object 'speaker2 'speaker 'garden 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_loud speaker2)
+     )
+    ; propositional attitudes
+    nil
+)
+
+(place-object 'pizza4 'pizza 'cave 0 
+	nil ; no associated-things
+    ; current facts
+    '((is_edible pizza4)
+     )
+    ; propositional attitudes
+    nil
+)
 ;(setq *occluded-preds* 
 ;    '(is_playable knows is_edible is_potable)
 ; We omit this, as *occluded-preds* is currently already set in 
@@ -305,6 +371,28 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; With operator walk, AG walks from point ?x to point ?y on road ?z, with 
+;; initial fatigue level ?f, assuming speed of one unit per time step.
+;; This is the `model' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq walk 
+	(make-op :name 'walk :pars '(?x ?y ?z ?f)
+	:preconds '((is_at AG ?x)        
+				(is_on ?x ?z)        
+				(is_on ?y ?z) (point ?y)
+				(navigable ?z)
+                (is_tired_to_degree AG ?f) )
+    :effects '((is_at AG ?y) 
+    		   (not (is_at AG ?x))
+               ;(is_tired_to_degree AG (+ ?f 0.5))
+               (is_tired_to_degree AG (+ ?f (* 0.5 (distance_from+to+on? ?x ?y ?z))))  
+               (not (is_tired_to_degree AG ?f)) )
+    :time-required '(distance_from+to+on? ?x ?y ?z)
+    :value '(- 3 ?f)
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This evaluation function returns the numeric distance from location arg
 ;; x to location arg y along the path arg z. This function is called by 
 ;; functions walk.actual and walk.
@@ -343,28 +431,6 @@
 			)
 		)
 	)
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; With operator walk, AG walks from point ?x to point ?y on road ?z, with 
-;; initial fatigue level ?f, assuming speed of one unit per time step.
-;; This is the `model' version.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq walk 
-	(make-op :name 'walk :pars '(?x ?y ?z ?f)
-	:preconds '((is_at AG ?x)        
-				(is_on ?x ?z)        
-				(is_on ?y ?z) (point ?y)
-				(navigable ?z)
-                (is_tired_to_degree AG ?f) )
-    :effects '((is_at AG ?y) 
-    		   (not (is_at AG ?x))
-               ;(is_tired_to_degree AG (+ ?f 0.5))
-               (is_tired_to_degree AG (+ ?f (* 0.5 (distance_from+to+on? ?x ?y ?z))))  
-               (not (is_tired_to_degree AG ?f)) )
-    :time-required '(distance_from+to+on? ?x ?y ?z)
-    :value '(- 3 ?f)
-    )
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
