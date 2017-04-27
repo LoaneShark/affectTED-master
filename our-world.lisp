@@ -120,10 +120,8 @@
 ; "gridworld-definitions.lisp".
 
 (setq *operators* '(walk eat answer_user_ynq answer_user_whq sleep drink ask+whether play))
-(setq *search-beam* (generate-search-beam))
-;(list (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) (cons 3 *operators*) ))
-	
-(defun generate-search-beam
+
+(defun generate-search-beam ()
 	(let ((c (gethash 'C *traits*)))
 		(cond
 			((> c 0.75 ) (list (cons 6 *operators*) (cons 5 *operators*) (cons 4 *operators*) (cons 3 *operators*)))
@@ -133,6 +131,8 @@
 			((< c -0.50) (list (cons 3 *operators*) (cons 2 *operators*)))
 			((< c -0.75) (list (cons 2 *operators*) (cons 1 *operators*)))
 			(t  		 (list (cons 4 *operators*) (cons 3 *operators*) (cons 2 *operators*) )))))
+
+(setq *search-beam* (generate-search-beam))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Operator fire.actual is the exogenous fire operator.  As long as there 
