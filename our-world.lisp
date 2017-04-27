@@ -527,7 +527,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
 	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z)
-	:preconds '( (is_extravert AG ?e)
+	:preconds '( (is_extroverted_to_degree AG ?e)
 				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
@@ -546,7 +546,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether.actual 
 	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z)
-	:startconds '( (is_extravert AG ?e)
+	:startconds '( (is_extroverted_to_degree AG ?e)
 				   (is_at AG ?z) 
 				   (is_at ?x ?z) 
 				   (can_talk ?x) 
