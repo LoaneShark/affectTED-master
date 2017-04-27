@@ -76,7 +76,7 @@
 ; be computed from scratch (avoiding the need to explicitly identify 
 ; and retract inferences that have become invalid).
 
-(defvar *occluded-preds* '(likes contains is_playable knows is_edible is_potable is_injured is_friendly is_grumpy is_dangerous is_loud))
+(defvar *occluded-preds* '(likes contains is_playable knows is_edible is_potable is_injured is_friendly is_grumpy is_dangerous is_loud is_hungry))
 ; Predicates for local facts that are not immediately known to AG 
 ; (unless the first (subject) argument is AG)
 

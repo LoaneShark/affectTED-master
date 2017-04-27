@@ -10,9 +10,9 @@
 ;; Date: Jan. 2010 by Daphne Liu
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def-roadmap '(home grove plaza cave garden) '((path1 home 3 grove) (path2 home 2 plaza) (path3 grove 2 cave) (path4 home 1 garden)))
+(def-roadmap '(home grove plaza cave garden) '((path1 home 3 grove) (path2 home 2 plaza) (path3 grove 2 cave) (path4 home 4 garden)))
 (def-object 'robot '(is_animate can_talk))
-(def-object 'expert '(is_animate can_talk))
+(def-object 'expert '(is_animate can_talk is_human))
 (def-object 'instrument '(is_inanimate is_playable))
 (def-object 'juice '(is_inanimate is_potable (has_cost 2.0)))
 (def-object 'pizza '(is_inanimate is_edible (has_cost 5.0)))
@@ -38,20 +38,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf (gethash 'O *traits*) 0.0)
 (setf (gethash 'C *traits*) 0.0)
-(setf (gethash 'E *traits*) 0.0)
-(setf (gethash 'A *traits*) 0.0)
+(setf (gethash 'E *traits*) 0.6)
+(setf (gethash 'A *traits*) 1.0)
 (setf (gethash 'N *traits*) 0.0)
 
 (setf (gethash 'hunger *vitals*) 4.0)
 (setf (gethash 'thirst *vitals*) 2.0)
-(setf (gethash 'fatigue *vitals*) 2.0)
+(setf (gethash 'fatigue *vitals*) 3.0)
 
 ;; Note that we create some "current facts" about
 ;; AG that are really about the situation at plaza;
 ;; this is just a way of ensuring that AG knows these
 ;; facts right at the outset.
 
-(place-object 'AG 'robot 'grove 0  
+(place-object 'AG 'robot 'home 0  
   nil ; no associated-things
   ; current facts
   `((is_hungry_to_degree AG ,(gethash 'hunger *vitals*))
@@ -83,6 +83,8 @@
     (is_at guru_friendly plaza)
 
     (is_at juice3 plaza)  
+    (is_at pizza3 home)
+    (is_at piano2 home)
      ;Note that right after the call to function initialize-state-node, 
      ;AG knows (is_edible pizza3) and (is_playable piano2). The reason is
      ;AG knows the types of pizza3 and piano2 colocated with AG at home,
@@ -174,6 +176,7 @@
     nil ; no associated-things
     ; current facts
     '((is_hungry wolf1)
+      (is_dangerous wolf1)
      )
     ; propositional attitudes
     nil
@@ -359,7 +362,7 @@
                     (knows USER (that (answer_to_ynq? ?q)))
 			  		)
         :time-required 1
-        :value 10
+        :value 100
 	)
 )
 
@@ -392,7 +395,7 @@
 				(knows USER (that (answer_to_whq? ?q)))
 			  )
 	:time-required 1
-	:value 20
+	:value 100
 	)
 )
 
@@ -460,19 +463,20 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq walk 
-	(make-op :name 'walk :pars '(?x ?y ?z ?f)
+	(make-op :name 'walk :pars '(?x ?y ?z ?f ?o)
 	:preconds '((is_at AG ?x)        
 				(is_on ?x ?z)        
 				(is_on ?y ?z) (point ?y)
 				(navigable ?z)
-                (is_tired_to_degree AG ?f) )
+        (is_open_to_degree AG ?o)
+        (is_tired_to_degree AG ?f) )
     :effects '((is_at AG ?y) 
     		   (not (is_at AG ?x))
                ;(is_tired_to_degree AG (+ ?f 0.5))
                (is_tired_to_degree AG (+ ?f (* 0.5 (distance_from+to+on? ?x ?y ?z))))  
                (not (is_tired_to_degree AG ?f)) )
     :time-required '(distance_from+to+on? ?x ?y ?z)
-    :value '(- 3 ?f)
+    :value '(+ (- 2 ?f) ?o)
     )
 )
 
@@ -644,19 +648,19 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
-	(make-op :name 'ask+whether :pars '(?e ?x ?y ?z ?h)
+	(make-op :name 'ask+whether :pars '(?x ?y ?z ?h ?e)
 	:preconds '( (is_extroverted_to_degree AG ?e)
 				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
 				 (knows ?x (whether ?y))
 				 (not (knows AG (whether ?y)))
-                 (is_happy_to_degree AG ?h) )
+         (is_happy_to_degree AG ?h) )
 	:effects '( (knows AG (whether ?y))
-                (is_happy_to_degree AG (min 5.0 (+ ?e ?h))) 
-                (not (is_happy_to_degree AG ?h)) )
+              (is_happy_to_degree AG (min 5.0 (+ ?e ?h))) 
+              (not (is_happy_to_degree AG ?h)) )
 	:time-required 1
-	:value '(* 5 (+ 1 ?e))
+	:value '(* 5.0 (+ 1.0 ?e))
 	)
 )
 
@@ -673,7 +677,7 @@
 				   (can_talk ?x) 
 				   (knows ?x (whether ?y))
 				   (not (knows AG (whether ?y)))
-                   (is_happy_to_degree AG ?h) )
+           (is_happy_to_degree AG ?h) )
 	:stopconds '( (knows AG (whether ?y)) )
 	:deletes '( (is_happy_to_degree AG ?#1) )
 	:adds '( (knows AG (whether ?y))
@@ -688,21 +692,22 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq play 
-	(make-op :name 'play :pars '(?h ?f ?x ?y) ; level of hunger ?h
+	(make-op :name 'play :pars '(?h ?f ?x ?y ?o) ; level of hunger ?h
 	:preconds '( (is_bored AG) 				  ; level of fatigue ?f
 				 (is_at AG ?y) 
 				 (is_at ?x ?y) 
 				 (is_playable ?x) 
 				 (is_thirsty_to_degree AG ?h)
-                 (is_tired_to_degree AG ?f)
+         (is_tired_to_degree AG ?f)
+         (is_open_to_degree AG ?o)
 				 (knows AG (whether (is_playable ?x))) )
 	:effects '( (not (is_bored AG)) 
 				(not (is_thirsty_to_degree AG ?h))
-                (not (is_tired_to_degree AG ?f))
+        (not (is_tired_to_degree AG ?f))
 				(is_thirsty_to_degree AG (+ ?h 0.5))
-                (is_tired_to_degree AG (+ ?f 0.5)) )
+        (is_tired_to_degree AG (+ ?f 0.5)) )
 	:time-required 1
-	:value 3
+	:value '(* 5.0 (+ 1.0 ?o))
 	)
 )
 
@@ -714,18 +719,19 @@
 ;; This is the `actual' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq play.actual 
-	(make-op.actual :name 'play.actual :pars '(?h ?f ?x ?y)
+	(make-op.actual :name 'play.actual :pars '(?h ?f ?x ?y ?o)
 	:startconds '( (is_bored AG)
 				   (is_at AG ?y) 
 				   (is_at ?x ?y) 
 				   (is_playable ?x) 
 				   (is_thirsty_to_degree AG ?h)
-                   (is_tired_to_degree AG ?f)
+           (is_tired_to_degree AG ?f)
+           (is_open_to_degree AG ?o)
 				   (knows AG (whether (is_playable ?x))) )
 	:stopconds '( (not (is_bored AG)) )
 	:deletes '( (is_tired_to_degree AG ?#2) 
-                (is_thirsty_to_degree AG ?#1) 
-                (is_bored AG) )
+              (is_thirsty_to_degree AG ?#1) 
+              (is_bored AG) )
     :adds '( (is_tired_to_degree AG (+ ?f (* 0.5 (elapsed_time?))))
              (is_thirsty_to_degree AG (+ ?h (* 0.5 (elapsed_time?)))) ) 
 	)
@@ -733,43 +739,57 @@
 
 ;; NEEDS TO BE FINISHED
 (setq play+with 
-    (make-op :name 'play+with :pars '(?x ?z) 
+    (make-op :name 'play+with :pars '(?x ?z ?h ?f ?e ?o) 
     :preconds '( (is_alive AG)
                  (is_bored AG)                
                  (is_at AG ?z) 
-                 (is_at ?x ?z) 
+                 (is_at ?x ?z)
+                 (is_human ?x) 
                  (is_thirsty_to_degree AG ?h)
-                 (is_tired_to_degree AG ?f) )
+                 (is_tired_to_degree AG ?f)
+                 (is_extroverted_to_degree AG ?e)
+                 (is_open_to_degree AG ?o)
+                 (not (is_injured ?x)) )
     :effects '( (not (is_bored AG)) 
                 (not (is_thirsty_to_degree AG ?h))
                 (not (is_tired_to_degree AG ?f))
                 (is_thirsty_to_degree AG (+ ?h 0.5))
                 (is_tired_to_degree AG (+ ?f 0.5)) )
     :time-required 1
-    :value 3
+    :value '(+ 1.0 (* 5.0 (* 0.75 ?e) (* 0.25 ?o)))
     )
 )
 ;; NEEDS TO BE FINISHED
 (setq talk+with 
-    (make-op :name 'talk+with :pars '(?x ?z) 
+    (make-op :name 'talk+with :pars '(?x ?z ?e ?a ?h ?n ?f) 
     :preconds '( (is_alive AG)
                  (is_at AG ?z) 
                  (is_at ?x ?z) 
-                 (can_talk ?x) )
-    :effects '()
+                 (can_talk ?x) 
+                 (is_agreeable_to_degree AG ?a)
+                 (is_extroverted_to_degree AG ?e)
+                 (is_happy_to_degree AG ?h)
+                 (is_neurotic_to_degree AG ?n)
+                 (is_friendly_to_degree ?x ?f))
+    :effects '((not (is_bored AG))
+               (not (is_happy_to_degree AG ?h)) 
+               (is_happy_to_degree AG (min 5 (+ ?h ?a (min 0 (* ?f ?n))))) )
     :time-required 1
-    :value 5
+    :value '(+ 1.0 (* 5.0 ?e))
+
     )
 )
 ;; NEEDS TO BE FINISHED
 (setq heal 
-    (make-op :name 'heal :pars '(?x ?z) 
+    (make-op :name 'heal :pars '(?x ?z ?e ?a) 
     :preconds '( (is_alive AG)
                  (is_at AG ?z) 
                  (is_at ?x ?z) 
-                 (is_injured ?x) )
+                 (is_injured ?x) 
+                 (is_agreeable_to_degree AG ?a)
+                 (is_extroverted_to_degree AG ?e))
     :effects '((not (is_injured ?x)))
     :time-required 1
-    :value 5 
+    :value '(+ 1.0 (* 5.0 (* 0.5 ?e) (* 1.5 ?a)))
     )
 )
