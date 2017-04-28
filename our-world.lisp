@@ -42,8 +42,8 @@
 (setf (gethash 'A *traits*) 1.0)
 (setf (gethash 'N *traits*) 0.0)
 
-(setf (gethash 'hunger *vitals*) 4.0)
-(setf (gethash 'thirst *vitals*) 2.0)
+(setf (gethash 'hunger *vitals*) 40.0)
+(setf (gethash 'thirst *vitals*) 20.0)
 (setf (gethash 'fatigue *vitals*) 3.0)
 
 ;; Note that we create some "current facts" about
@@ -142,13 +142,14 @@
     nil ; no current facts
     ; propositional attitudes
     '((knows guru (whether (is_potable juice3)))
+      (is_friendly_to_degree guru 0.0)
      )
 )
 
 (place-object 'guru_friendly 'expert 'plaza 0 
     nil ; no associated-things
     ; current facts
-    '((is_friendly guru_friendly)
+    '((is_friendly_to_degree guru_friendly 1.0)
      )
     ; propositional attitudes
     nil
@@ -157,7 +158,7 @@
 (place-object 'guru_grumpy 'expert 'plaza 0 
     nil ; no associated-things
     ; current facts
-    '((is_grumpy guru_grumpy)
+    '((is_friendly_to_degree guru_grumpy -1.0)
      )
     ; propositional attitudes
     nil
@@ -167,6 +168,7 @@
     nil ; no associated-things
     ; current facts
     '((is_injured guru_injured)
+      (is_friendly_to_degree guru_injured 0.5)
      )
     ; propositional attitudes
     nil
@@ -464,7 +466,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq walk 
 	(make-op :name 'walk :pars '(?x ?y ?z ?f ?o)
-	:preconds '((is_at AG ?x)        
+	:preconds '((is_alive AG)
+        (is_at AG ?x)        
 				(is_on ?x ?z)        
 				(is_on ?y ?z) (point ?y)
 				(navigable ?z)
@@ -487,7 +490,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq walk.actual 
 	(make-op.actual :name 'walk.actual :pars '(?x ?y ?z ?f)
-	:startconds '((is_at AG ?x)        
+	:startconds '((is_alive AG)
+          (is_at AG ?x)        
 				  (is_on ?x ?z)        
 				  (is_on ?y ?z) (point y)
 				  (navigable ?z)
@@ -513,7 +517,8 @@
 	(make-op :name 'sleep :pars '(?f ?h) ; level of fatigue ?f 
                                          ; {0, 0.5, 1.0, 1.5, ...}
                                          ; similarly for hunger ?h
-    :preconds '((is_at AG home)
+    :preconds '((is_alive AG)
+                (is_at AG home)
                 (is_tired_to_degree AG ?f)
                 (>= ?f 2.5);(>= ?f 0.5)
                 (is_hungry_to_degree AG ?h)
@@ -536,7 +541,8 @@
 (setq sleep.actual 
 	(make-op.actual :name 'sleep.actual :pars '(?f ?h) ; level of fatigue ?f 
                                                 	   ; level of hunger ?h
-    :startconds '((is_at AG home)
+    :startconds '((is_alive AG)
+                  (is_at AG home)
                   (is_tired_to_degree AG ?f)
                   (>= ?f 2.5)
                   (is_hungry_to_degree AG ?h)
@@ -559,7 +565,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq eat 
 	(make-op :name 'eat :pars '(?h ?x ?y) ; level of hunger ?h
-	:preconds '( (is_hungry_to_degree AG ?h)
+	:preconds '( (is_alive AG)
+         (is_hungry_to_degree AG ?h)
 				 (>= ?h 2.0)
 				 (is_at AG ?y) 
 				 (is_at ?x ?y) 
@@ -583,7 +590,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq eat.actual 
 	(make-op.actual :name 'eat.actual :pars '(?h ?x ?y)
-	:startconds '( (is_hungry_to_degree AG ?h) 
+	:startconds '( (is_alive AG)
+           (is_hungry_to_degree AG ?h) 
 				   (>= ?h 2.0)
 				   (is_at AG ?y) 
 				   (is_at ?x ?y) 
@@ -605,7 +613,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq drink 
 	(make-op :name 'drink :pars '(?h ?x ?y) ; level of thirst ?h
-	:preconds '( (is_thirsty_to_degree AG ?h) 
+	:preconds '( (is_alive AG)
+         (is_thirsty_to_degree AG ?h) 
 				 (> ?h 0.0)
 				 (is_at AG ?y) 
 				 (is_at ?x ?y) 
@@ -628,7 +637,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq drink.actual 
 	(make-op.actual :name 'drink.actual :pars '(?h ?x ?y)
-	:startconds '( (is_thirsty_to_degree AG ?h) 
+	:startconds '( (is_alive AG)
+           (is_thirsty_to_degree AG ?h) 
 				   (> ?h 0.0)
 				   (is_at AG ?y) 
 				   (is_at ?x ?y) 
@@ -649,7 +659,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether 
 	(make-op :name 'ask+whether :pars '(?x ?y ?z ?h ?e)
-	:preconds '( (is_extroverted_to_degree AG ?e)
+	:preconds '( (is_alive AG)
+         (is_extroverted_to_degree AG ?e)
 				 (is_at AG ?z) 
 				 (is_at ?x ?z) 
 				 (can_talk ?x) 
@@ -671,7 +682,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq ask+whether.actual 
 	(make-op.actual :name 'ask+whether.actual :pars '(?e ?x ?y ?z ?h)
-	:startconds '( (is_extroverted_to_degree AG ?e)
+	:startconds '( (is_alive AG)
+           (is_extroverted_to_degree AG ?e)
 				   (is_at AG ?z) 
 				   (is_at ?x ?z) 
 				   (can_talk ?x) 
@@ -692,8 +704,9 @@
 ;; This is the `model' version.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq play 
-	(make-op :name 'play :pars '(?h ?f ?x ?y ?o) ; level of hunger ?h
-	:preconds '( (is_bored AG) 				  ; level of fatigue ?f
+	(make-op :name 'play :pars '(?h ?f ?x ?y ?o)
+	:preconds '( (is_alive AG)
+         (is_bored AG) 				 
 				 (is_at AG ?y) 
 				 (is_at ?x ?y) 
 				 (is_playable ?x) 
@@ -720,7 +733,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq play.actual 
 	(make-op.actual :name 'play.actual :pars '(?h ?f ?x ?y ?o)
-	:startconds '( (is_bored AG)
+	:startconds '( (is_alive AG)
+           (is_bored AG)
 				   (is_at AG ?y) 
 				   (is_at ?x ?y) 
 				   (is_playable ?x) 
@@ -737,7 +751,13 @@
 	)
 )
 
-;; NEEDS TO BE FINISHED
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, and as long as AG is 
+;; bored, then AG can play with ?x to relieve his boredom but also experience 
+;; an increase in both his hunger ?h and fatigue ?f. The perceived value is 
+;; dependant mostly on AG's extroversion ?e and partially on openness ?o
+;; This is the `model' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq play+with 
     (make-op :name 'play+with :pars '(?x ?z ?h ?f ?e ?o) 
     :preconds '( (is_alive AG)
@@ -759,7 +779,39 @@
     :value '(+ 1.0 (* 5.0 (* 0.75 ?e) (* 0.25 ?o)))
     )
 )
-;; NEEDS TO BE FINISHED
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, and as long as AG is 
+;; bored, then AG can play with ?x to relieve his boredom but also experience 
+;; an increase in both his hunger ?h and fatigue ?f. ?x must not be injured 
+;; This is the `actual' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq play+with.actual
+    (make-op.actual :name 'play+with.actual :pars '(?x ?z ?h ?f ?e ?o) 
+    :startconds '( (is_alive AG)
+                 (is_bored AG)                
+                 (is_at AG ?z) 
+                 (is_at ?x ?z)
+                 (is_human ?x) 
+                 (is_thirsty_to_degree AG ?h)
+                 (is_tired_to_degree AG ?f)
+                 (is_extroverted_to_degree AG ?e)
+                 (is_open_to_degree AG ?o)
+                 (not (is_injured ?x)) )
+    :stopconds '( (not (is_bored AG)) )
+    :deletes '( (is_tired_to_degree AG ?#2) 
+              (is_thirsty_to_degree AG ?#1) 
+              (is_bored AG) )
+    :adds '( (is_tired_to_degree AG (+ ?f (* 0.5 (elapsed_time?))))
+             (is_thirsty_to_degree AG (+ ?h (* 0.5 (elapsed_time?)))) ) 
+    )
+)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, then AG can talk to 
+;; ?x to potentially increase its happinness ?h, dependant on agreeableness
+;; ?a and/or neuroticism ?n. The perceived value is dependant on AG's 
+;; extroversion ?e and ?x's friendliness ?f. ?x must not be injured.
+;; This is the `model' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq talk+with 
     (make-op :name 'talk+with :pars '(?x ?z ?e ?a ?h ?n ?f) 
     :preconds '( (is_alive AG)
@@ -770,6 +822,7 @@
                  (is_extroverted_to_degree AG ?e)
                  (is_happy_to_degree AG ?h)
                  (is_neurotic_to_degree AG ?n)
+                 (not (is_injured ?x))
                  (is_friendly_to_degree ?x ?f))
     :effects '((not (is_bored AG))
                (not (is_happy_to_degree AG ?h)) 
@@ -779,7 +832,36 @@
 
     )
 )
-;; NEEDS TO BE FINISHED
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, then AG can talk to 
+;; ?x to potentially increase its happinness ?h, dependant on agreeableness
+;; ?a and/or neuroticism ?n. 
+;; This is the `actual' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq talk+with.actual
+    (make-op.actual :name 'talk+with.actual :pars '(?x ?z ?e ?a ?h ?n ?f) 
+    :startconds '( (is_alive AG)
+                 (is_at AG ?z) 
+                 (is_at ?x ?z) 
+                 (can_talk ?x) 
+                 (is_agreeable_to_degree AG ?a)
+                 (is_extroverted_to_degree AG ?e)
+                 (is_happy_to_degree AG ?h)
+                 (is_neurotic_to_degree AG ?n)
+                 (not (is_injured ?x))
+                 (is_friendly_to_degree ?x ?f))
+    :stopconds '('T)
+    :deletes   '((is_happy_to_degree AG ?#1) 
+                  (is_bored AG))
+    :adds      '((is_happy_to_degree AG (min 5 (+ ?h ?a (min 0 (* ?f ?n))))) )
+    )
+)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, and ?x is_injured,
+;; then AG can choose to heal ?x, to later interact with them. 
+;; dependant on agreeableness ?a slightly on extroversion ?e. 
+;; This is the `model' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq heal 
     (make-op :name 'heal :pars '(?x ?z ?e ?a) 
     :preconds '( (is_alive AG)
@@ -791,5 +873,23 @@
     :effects '((not (is_injured ?x)))
     :time-required 1
     :value '(+ 1.0 (* 5.0 (* 0.5 ?e) (* 1.5 ?a)))
+    )
+)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; If at the same location ?z as is a is_human item ?x, and ?x is_injured,
+;; then AG can choose to heal ?x, to later interact with them. 
+;; This is the `actual' version.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq heal.actual
+    (make-op.actual :name 'heal.actual :pars '(?x ?z ?e ?a) 
+    :startconds '( (is_alive AG)
+                 (is_at AG ?z) 
+                 (is_at ?x ?z) 
+                 (is_injured ?x) 
+                 (is_agreeable_to_degree AG ?a)
+                 (is_extroverted_to_degree AG ?e))
+    :stopconds '((not (is_injured ?x)))
+    :deletes '((is_injured ?x))
+    :adds '()
     )
 )
