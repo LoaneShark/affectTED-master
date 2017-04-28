@@ -1,13 +1,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Name: gridworld-world.lisp
-;; This is the sample gridworld you can experiment with to familiarize
-;; yourself with the framework. Note that when creating your new gridworld,
-;; you should modify the functions state-value and expected-value in
-;; gridworld-planning.lisp to reflect the likes and dislikes of your agent.
+;; Name: our-world.lisp
+;; This is the world of TED, an agent created to simulate the effects
+;; of inherent personality traits on decisionmaking, planning ability,
+;; and emotional modeling. It is built from the original Gridworld, created
+;; by Daphne Liu and Lenhart Schubert.
 ;;
-;; Author: Daphne Liu
-;; Date: Jan. 2010 by Daphne Liu
+;; Authors: Santiago Loane and Nathaniel Potrepka
+;; Original Author: Daphne Liu
+;; Date: Apr. 2017 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def-roadmap '(home grove plaza cave garden) '((path1 home 3 grove) (path2 home 2 plaza) (path3 grove 2 cave) (path4 home 4 garden)))
