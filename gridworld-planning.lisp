@@ -9,14 +9,14 @@
 ;; Date of Version 4: Nov. 2010 version 4 by Daphne Liu
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; ABOUT KNOWLEDGE STORAGE AND AVAILABILITY TO 'AG':
+; ABOUT KNOWLEDGE STORTEDE AND AVAILABILITY TO 'TED':
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; We distinguish 3 sorts of facts
 ;
 ; - roadmap facts (about the arrangement of points and roads
 ;   connecting them), stored as the value of *roadmap-knowledge*;
 ;   they are created via the function 'def-roadmap'; the agent
-;   AG is assumed to know these facts;
+;   TED is assumed to know these facts;
 ;
 ; - general facts about the world, in particular about the
 ;   properties of various types of entities, stored as the value
@@ -26,7 +26,7 @@
 ;   *general-knowledge*; they are intended to allow further 
 ;   inferences to be drawn about the current situation, either 
 ;   from the perspective of the agent's beliefs (assuming the 
-;   agent AG knows all the general facts), or for modelling the 
+;   agent TED knows all the general facts), or for modelling the 
 ;   world as it actually is.
 ;
 ; - specific facts, i.e., ground predications (we might at some
@@ -72,19 +72,19 @@
 ;   *world-facts* called *protected-facts*, which includes no
 ;   inferred facts.
 ;  
-; What facts are known to AG in a given state?
+; What facts are known to TED in a given state?
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; It is important to note that atomic ground facts also get
 ; stored in state-nodes (generated in the planning process),
 ; as the value of the 'wffs' field of a state-node. THESE WFFS
-; CAN BE VIEWED AS THE GROUND FACTS THAT AG IS AWARE OF IN THAT
+; CAN BE VIEWED AS THE GROUND FACTS THAT TED IS AWARE OF IN THAT
 ; STATE. These in general include both the roadmap facts and 
 ; local facts (acquired by observation at the present location
 ; and at previously visited locations), the latter quite possibly
 ; elaborated through the use of general knowledge. Note that since
 ; state wffs are propagated from state-to-(successor)state when 
 ; an operator is applied -- except for changes made by that operator 
-; -- THE AGENT, AG, NEVER "FORGETS" ANYTHING IT HAS LEARNED BY 
+; -- THE TEDENT, TED, NEVER "FORGETS" ANYTHING IT HAS LEARNED BY 
 ; VISITING A POINT OR MAKING INFERENCES (except, once again, facts
 ; that are changed by the actions it has taken or is considering). 
 ;
@@ -92,9 +92,9 @@
 ; the agent that is non-local (and not roadmap knowledge). This
 ; is done simply by supplying any facts we want the agent to
 ; know initially as part of the curr-facts argument when we
-; place 'AG' at a particular initial location.
+; place 'TED' at a particular initial location.
 ; 
-; The above description of how the knowledge of AG evolves is 
+; The above description of how the knowledge of TED evolves is 
 ; not completely accurate, because allowance is also made for 
 ; the possibility that the "actual" actions taken by the agent 
 ; have somewhat different effects from those the agent "thinks"
@@ -133,7 +133,7 @@
 ; fact that the speech act occurred into the agent's belief state,
 ; and run relevant inferential updates based on that fact. The
 ; chief inference for a question might be that the question-asker
-; wants AG to tell him/her/it an answer to the question (this is
+; wants TED to tell him/her/it an answer to the question (this is
 ; a simplification from a more general speech act approach); this
 ; will prime the agent for potentially responding accordingly. The
 ; agent will need to have operators for responding (i.e., satisfying
@@ -146,9 +146,9 @@
 ; possible within a non-hierarchical planning framework?
 ; 
 ; We should be able to handle this through computable effects:
-; the effect is something like (say AG (answer-to? ?x)),
+; the effect is something like (say TED (answer-to? ?x)),
 ; where ?x is bound to the input question, and which upon evalu-
-; ation becomes (say AG <some specific proposition>). Besides
+; ation becomes (say TED <some specific proposition>). Besides
 ; storing this effect in the agent's knowledge state as usual, 
 ; we would also ensure that if the questioner is the user, the
 ; answer is actually printed to standard-output as a side-effect
@@ -157,7 +157,7 @@
 ; the answer, and (perhaps!) believes that content. This should be 
 ; automatic from applying general knowledge to local facts that 
 ; are noticed -- and certainly facts about the user (like those 
-; about the agent, AG) should be regarded as always being local 
+; about the agent, TED) should be regarded as always being local 
 ; to wherever the agent is. So the one thing required here (in 
 ; addition to an appropriate 'answer-to?' function, of course) 
 ; is that facts about the user always be treated as local in 
@@ -210,7 +210,7 @@
 (defvar *real-history* nil) ; the sequence of actions (with parameter values)
 						    ; and events so far in the world
 
-(defvar *AG-history* nil) ; the sequence of actions (with parameter values)
+(defvar *TED-history* nil) ; the sequence of actions (with parameter values)
 						  ; taken so far from the agent's perspective
 
 (defvar *operators* nil) ; names of the available operators;
@@ -1338,14 +1338,14 @@
 (defun initialize-state-node ( ); Revised Dec. 2009 by Daphne Liu
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; This augments the world state (*world-facts*) with inferences
-; from *general-facts*, and then sets up AG's initial state-node,
+; from *general-facts*, and then sets up TED's initial state-node,
 ; creating a new state-node name and providing its value via
 ; `make-state-node'. This value also becomes *curr-state-node*.
 ; Most importantly, it sets the `wffs' field of that state-node
 ; so as to cover the *roadmap-knowledge* (we should perhaps consider
 ; whether to just use facts about nearby roads/points?), plus the
-; "non-occluded" facts (that should be evident to the AG agent)
-; about entities located at *here* (the point at which the AG agent
+; "non-occluded" facts (that should be evident to the TED agent)
+; about entities located at *here* (the point at which the TED agent
 ; has been placed by the user). The `local-value' of the initial 
 ; state is set to 0 -- this is an arbitrary reference value, and
 ; the `forward-value' is set by default to, say, 2 (larger values
@@ -1353,7 +1353,7 @@
 ;
 	(let	(local-facts local-facts-terms-triple implied-facts
           	 (new-state-node-name (gensym "STATE-NODE"))
-          	 (location (find-location 'AG *world-facts*))
+          	 (location (find-location 'TED *world-facts*))
        		)
        
 		; The assumption is that the user would not call function 
@@ -1364,10 +1364,10 @@
        	(when (null *roadmap-knowledge*)
            (return-from initialize-state-node
              "** You need to do a def-roadmap before initializing"))
-       	; Check for presence of AG *here*.
+       	; Check for presence of TED *here*.
        	(when (null location)
            (return-from initialize-state-node
-             "** You need to do a place-object for AG before initializing"))      
+             "** You need to do a place-object for TED before initializing"))      
 
        (setq *visited-places* (list location))
 	   (setq *visited-objects* nil) ; updated in facts-evident-to function
@@ -1383,7 +1383,7 @@
        (add_htable_to_hashtable implied-facts *world-facts* 'NIL)
        ; Now *world-facts* may be larger than *protected-facts*.
        ; Pick out the local world facts apparent to the agent.
-       (setq local-facts-terms-triple (facts-evident-to 'AG *world-facts* 'T))
+       (setq local-facts-terms-triple (facts-evident-to 'TED *world-facts* 'T))
        
        (setq local-facts (first local-facts-terms-triple))
        (setq new-terms (second local-facts-terms-triple))
@@ -1396,7 +1396,7 @@
 	(setq new-terms (append new-terms
 		(add_htable_to_hashtable (all-inferences local-facts *general-knowledge* *inference-limit*) local-facts 'T)))
 		    
-       ; Create a corresponding initial state node for AG.
+       ; Create a corresponding initial state node for TED.
        (set new-state-node-name
             (make-state-node
                :terms new-terms
@@ -1408,10 +1408,10 @@
                :forward-value 2 )); NB: :parent is nil by default
        (setq *event-queue* '())
        (setq *real-clock* 0)
-       (setq *AG-clock* 0)
+       (setq *TED-clock* 0)
        (setq *total-value* 0)
        (setq *real-history* '())
-       (setq *AG-history* '())
+       (setq *TED-history* '())
        (setq *curr-state-node* (eval new-state-node-name))
        (setq *node-now* *curr-state-node*)
  )
@@ -1427,7 +1427,7 @@
 ; in such formulas.
 ;
 ; # Note that a fact is not considered occluded if its first
-; argument is AG, even if the predicate is occluded.
+; argument is TED, even if the predicate is occluded.
 ;
   (let* ((objects (objects-colocated-with agent wff-htable))
   		(aug-objects (cons agent objects))
@@ -1529,14 +1529,14 @@
 (defun occluded-fact (wff); Revised in April 2008
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Return non-nil result if the predicate of the wff is occluded
-; and the first ("subject") argument is not `AG'. Examples of
-; occluded facts might be (hungry Grunt) (but not (hungry AG)), 
-; (is_hidden_in Key2 Box3), or (knows_that Grunt (has AG banana3)).
+; and the first ("subject") argument is not `TED'. Examples of
+; occluded facts might be (hungry Grunt) (but not (hungry TED)), 
+; (is_hidden_in Key2 Box3), or (knows_that Grunt (has TED banana3)).
 ;
   (cond ((atom wff) (member wff *occluded-preds*)); unexpectd
         (t (and (member (car wff) *occluded-preds*)
                 (or (null (second wff)) 
-                    (not (eq (second wff) 'AG)) )))
+                    (not (eq (second wff) 'TED)) )))
   )
 )
 
@@ -1781,9 +1781,9 @@
 ; Update the agent's beliefs in light of the locally evident
 ; facts (and beliefs that have evidently become false)
 ; - wff-htable := agent's beliefs at the given state-node
-; - compute local-beliefs := (facts-evident-to 'AG wff-htable) 
+; - compute local-beliefs := (facts-evident-to 'TED wff-htable) 
 ; - delete from wff-htable those local-beliefs that are not local-facts
-; - Compute local-facts := (facts-evident-to 'AG *world-facts*);
+; - Compute local-facts := (facts-evident-to 'TED *world-facts*);
 ; - augment wff-htable (which are beliefs) with any unknown local-facts
 ; - add inferences based on updated wffs and *general-knowledge*
 ; - hence update agent's belief state
@@ -1803,9 +1803,9 @@
   (let* ((wff-htable (state-node-wff-htable state-node))
   		 (new-terms (state-node-terms state-node))
          ; beliefs that *should* be evident facts if true:
-         (local-beliefs (facts-evident-to 'AG wff-htable 'NIL))
+         (local-beliefs (facts-evident-to 'TED wff-htable 'NIL))
          ; actual local unoccluded facts:
-         (local-facts (facts-evident-to 'AG *world-facts* 'NIL))
+         (local-facts (facts-evident-to 'TED *world-facts* 'NIL))
          falsified-facts implied-facts
         )                 
         ; Now do belief updates
@@ -1836,7 +1836,7 @@
         ; reset wffs-field of state-node to the revised set
         ;(setf (state-node-wff-htable state-node) wff-htable)
         (setf (state-node-terms state-node) new-terms)
-        (setq *here* (find-location 'AG wff-htable)); not sure if needed...
+        (setq *here* (find-location 'TED wff-htable)); not sure if needed...
         
         (setq *visited-places* (remove-duplicates (cons *here* *visited-places*)))
         ; *visited-objects* updated in facts-evident-to function
@@ -1880,13 +1880,13 @@
 ; the additions and subtractions are made using 'prior-local-value'
 ; as starting value;
 ;
-; Just as an example, let's suppose the agent AG likes knowing
+; Just as an example, let's suppose the agent TED likes knowing
 ; things, likes being liked, and likes having things, and
 ; dislikes being hungry. So we reward addition of wffs of form
-; (know-whether AG ...), (know-that AG ...), (likes ... AG),
-; (has AG ...); and we reward removal of (hungry AG). Also
-; we punish (correspondingly) removal of (likes ... AG) and
-; (has AG ...), and addition of (hungry AG). 
+; (know-whether TED ...), (know-that TED ...), (likes ... TED),
+; (has TED ...); and we reward removal of (hungry TED). Also
+; we punish (correspondingly) removal of (likes ... TED) and
+; (has TED ...), and addition of (hungry TED). 
 ; 
   (let ((local-value prior-local-value) pred incr)
        (dolist (wff additions)
@@ -1895,7 +1895,7 @@
              (setq incr 
                 (case pred
                    ((knows has) ; (know-whether know-that has) 
-                    (if (eq (second wff) 'AG) 1 0) )
+                    (if (eq (second wff) 'TED) 1 0) )
                    (wants 
                     (if (eq (second wff) 'USER)
                     	(if (listp (third wff)) 
@@ -1904,7 +1904,7 @@
                     		    (if (> (length (second (third wff))) 3)
                     			(if (and (eq (first (second (third wff))) 
                                                      'tells)
-			                    					 	                                               (eq (second (second (third wff))) 'AG)
+			                    					 	                                               (eq (second (second (third wff))) 'TED)
 			                    					 	                                               (eq (third (second (third wff))) 'USER))
 			                    				-20 0
 			                    		)
@@ -1920,15 +1920,15 @@
                      )
                    )
                    (likes 
-                    (if (eq (third wff) 'AG) 1 0) )
+                    (if (eq (third wff) 'TED) 1 0) )
                    (bored
-                   	(if (eq (second wff) 'AG) -1 0) )
+                   	(if (eq (second wff) 'TED) -1 0) )
                    (is_thirsty_to_degree 
-                    (if (eq (second wff) 'AG) (- (third wff)) 0) )
+                    (if (eq (second wff) 'TED) (- (third wff)) 0) )
                    (is_hungry_to_degree 
-                    (if (eq (second wff) 'AG) (- (third wff)) 0) )
+                    (if (eq (second wff) 'TED) (- (third wff)) 0) )
                    (is_tired_to_degree
-                    (if (eq (second wff) 'AG) (- (third wff)) 0) )
+                    (if (eq (second wff) 'TED) (- (third wff)) 0) )
                    (t 0) ))
              (incf local-value incr) ))
        (dolist (wff deletions)
@@ -1943,7 +1943,7 @@
                     		(if (listp (second (third wff)))
                     		    (if (> (length (second (third wff))) 3)
                     			(if (and (eq (first (second (third wff))) 'tells)
-			                    					 	                                               (eq (second (second (third wff))) 'AG)
+			                    					 	                                               (eq (second (second (third wff))) 'TED)
 			                    					 	                                               (eq (third (second (third wff))) 'USER))
 			                    				50 0
 			                    		)
@@ -1959,15 +1959,15 @@
                      )
                    )
                    (likes
-                    (if (eq (third wff) 'AG) -1 0) )
+                    (if (eq (third wff) 'TED) -1 0) )
                    (bored
-                   	(if (eq (second wff) 'AG) 1 0) )
+                   	(if (eq (second wff) 'TED) 1 0) )
                    (is_thirsty_to_degree
-                    (if (eq (second wff) 'AG) (third wff) 0) )
+                    (if (eq (second wff) 'TED) (third wff) 0) )
                    (is_hungry_to_degree
-                    (if (eq (second wff) 'AG) (third wff) 0) )
+                    (if (eq (second wff) 'TED) (third wff) 0) )
                    (is_tired_to_degree
-                    (if (eq (second wff) 'AG) (third wff) 0) )
+                    (if (eq (second wff) 'TED) (third wff) 0) )
                    (t 0) ))
              (incf local-value incr) )) 
        local-value

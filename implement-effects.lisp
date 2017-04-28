@@ -2,7 +2,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This procedure executes the first action specified by arg action-name 
-;; of the best plan found in go!, updates *real-clock* and *AG-clock*, 
+;; of the best plan found in go!, updates *real-clock* and *TED-clock*, 
 ;; and refreshes the actual new current state *curr-state-node* after 
 ;; gathering new facts that may be available after the action taken.  
 ;; (The assumption is that some facts associated with objects at a 
@@ -10,8 +10,8 @@
 ;; point, and so the new state will in general be richer in facts than the 
 ;; anticipated state. After executing the action, the action along with 
 ;; its real resulting state, real duration, expected duration, and  
-;; *real-clock* and *AG-clock* is logged in *real-history* and 
-;; *AG-history*, respectively.
+;; *real-clock* and *TED-clock* is logged in *real-history* and 
+;; *TED-history*, respectively.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; Daphne: Revised 10/18/2012 to handle new representation of terms
@@ -66,14 +66,14 @@
         (setq *event-timer* 0)
 		
         ; Execute the action iteration by iteration while its termination 
-        ; conditions are all not true in AG's KB.
+        ; conditions are all not true in TED's KB.
         (while (or (eq 'T is-first-iter) (eq is-terminated 'NIL))
            (incf *event-timer* 1)
            (if (eq 'T is-first-iter)
                (setq is-first-iter 'NIL)
                ; For each subsequent (after first) iteration, check whether any 
                ; of the termination conditions of the selected action are true 
-               ; according to AG's KB.
+               ; according to TED's KB.
                (progn 
                   (handleExtOps)
                   ; Above line commented out only for opp (i.e., normal) runs
@@ -92,9 +92,9 @@
                       (setq is-terminated 'T))
                )
            )
-           ; Evaluate and apply effects to the world KB and AG's KB only if the 
+           ; Evaluate and apply effects to the world KB and TED's KB only if the 
            ; selected action's termination conditions are all false according 
-           ; to AG's KB.		
+           ; to TED's KB.		
            (when (eq 'NIL is-terminated)
                ; Evaluate and simplify the actual adds.
                (setq adds (mapcar #'simplify-value adds.actual))
@@ -135,7 +135,7 @@
                                      *general-knowledge* *inference-limit*))
                (add_htable_to_hashtable *protected-facts* *world-facts* 'NIL)
 				
-               ; Apply actual effects to AG's KB.
+               ; Apply actual effects to TED's KB.
                (setq new-terms (state-node-terms *curr-state-node*))
                (setq new-wff-htable (state-node-wff-htable *curr-state-node*))
                (setq new-terms 
@@ -163,27 +163,27 @@
 						
                ; After the very first iteration of execution, the action along 
                ; with its real resulting state, real elapsed duration, expected 
-               ; duration, and *AG-clock* is logged in *AG-history*.  Only the 
+               ; duration, and *TED-clock* is logged in *TED-history*.  Only the 
                ; start and (later) the end, and not each iteration of execution, 
-               ; of the action will be logged in *AG-history* to reflect that 
-               ; AG does not know in advance what the real duration of an action
+               ; of the action will be logged in *TED-history* to reflect that 
+               ; TED does not know in advance what the real duration of an action
                ; will surely be.
                (if (= 1 *event-timer*)
                    (push (list (cons the-action new-state) 
-                               *event-timer* expected-duration *AG-clock*) 
-                         *AG-history*)) 
+                               *event-timer* expected-duration *TED-clock*) 
+                         *TED-history*)) 
            )
-           ; Increment *real-clock* and *AG-clock* after each iteration of 
+           ; Increment *real-clock* and *TED-clock* after each iteration of 
            ; execution.
            (incf *real-clock* 1)
-           (incf *AG-clock* 1)
+           (incf *TED-clock* 1)
         ); end of executing the action iteration by iteration
 
-        ; Log the end of the action in *AG-history* to indicate AG's awareness 
+        ; Log the end of the action in *TED-history* to indicate TED's awareness 
         ; of its termination.
         (when (> *event-timer* 2)
             (push (list (cons the-action new-state) (- *event-timer* 1) 
-                        expected-duration (- *AG-clock* 2)) *AG-history*)
+                        expected-duration (- *TED-clock* 2)) *TED-history*)
         )
  )
 ); end of implement-effects 

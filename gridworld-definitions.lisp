@@ -54,8 +54,8 @@
 ; Table with vital signs for checking death
 
 (defparameter *extra-initial-knowledge* (make-hash-table :test #'equal)) 
-; Extra initial knowledge that may be supplied to AG when the initial 
-; place-obj is done for object AG. (It is "extra" in the sense that AG
+; Extra initial knowledge that may be supplied to TED when the initial 
+; place-obj is done for object TED. (It is "extra" in the sense that TED
 ; is presumed to know the roadmap knowledge, and also any locally 
 ; apparent facts at the point where it is placed). The extra initial 
 ; knowledge should be supplied as curr-facts in the place-obj command,  
@@ -77,8 +77,8 @@
 ; and retract inferences that have become invalid).
 
 (defvar *occluded-preds* '(likes contains is_playable knows is_edible is_potable is_injured is_friendly is_grumpy is_dangerous is_loud is_hungry))
-; Predicates for local facts that are not immediately known to AG 
-; (unless the first (subject) argument is AG)
+; Predicates for local facts that are not immediately known to TED 
+; (unless the first (subject) argument is TED)
 
 (defvar *epistemic-preds* '(knows is_obligated_to believes wants))
 ; Currently, there's no significance of declaring a predicate as
@@ -115,7 +115,7 @@
 ;    "taking road x from point y to point z" to correspond to
 ;    a unique path; theoretically, 'points' may include points
 ;    not reached by any road; a "minimalist" roadmap would be
-;    one that has just one point (where we place AG), and no 
+;    one that has just one point (where we place TED), and no 
 ;    roads.
 ;
 ; METHOD:
@@ -184,7 +184,7 @@
 		
 		(setq road-points (union pt-list road-points))
             	
-		; Create a roadmap knowledge list for the Motivated Explorer (AG):
+		; Create a roadmap knowledge list for the Motivated Explorer (TED):
 		(add_tuple_to_hashtable(cons 'road (list name)) *roadmap-knowledge* 'NIL)
 		(add_tuple_to_hashtable (cons 'navigable (list name)) *roadmap-knowledge* 'NIL)
 		
@@ -283,8 +283,8 @@
 ; that type, and `is_at' that point part of the list that is
 ; the value of the `facts' property of `point'), at a specified
 ; 'time-pt' and we supply three kinds of additional information 
-; for it (where these become available to AG as knowledge "packets"
-; if AG is at that point):
+; for it (where these become available to TED as knowledge "packets"
+; if TED is at that point):
 ; - things that it currently "has" -- a list of typed entities
 ;   such as ((key key1) (sword sword1) (banana banana3));
 ;   these may be regarded as *possessions* in the case of animate
@@ -298,9 +298,9 @@
 ; - current-state facts about it; e.g., (hungry Grunt), or
 ;   (likes Grunt Tweety); in this version we do not add time
 ;   arguments, but directly place the given facts in *world-facts*. 
-;   N.B.: IF THE OBJECT PLACED IS AG, THEN THE CURR-FACTS MAY ALSO
-;   INCLUDE FACTS THAT DO *NOT* HAVE AG IN SUBJECT POSITION; THESE
-;   ARE TREATED AS "EXTRA" INITIAL KNOWLEDGE OF AG (IN ADDITION TO
+;   N.B.: IF THE OBJECT PLACED IS TED, THEN THE CURR-FACTS MAY ALSO
+;   INCLUDE FACTS THAT DO *NOT* HAVE TED IN SUBJECT POSITION; THESE
+;   ARE TREATED AS "EXTRA" INITIAL KNOWLEDGE OF TED (IN ADDITION TO
 ;   ROADMAP KNOWLEDGE, SELF-KNOWLEDGE AND ANY ADDITIONAL LOCALLY
 ;   APPARENT FACTS);
 ; - propositional attitudes such as (knows Grunt (has Robbie
@@ -313,15 +313,15 @@
 ;   input. Again these facts are put in *world-facts*;
 ;
 ; Note: `time-pt' is a number such as 0, but this is used in
-; the present version of the code just to set *AG-clock*, not in any
+; the present version of the code just to set *TED-clock*, not in any
 ; predicates (time remains implicit in predicates),
 ;
   (let (facts list-of-terms-in-added-tuple)
     ; type predication about 'name':
     (push (list obj-type name) facts) 
     (push (list 'is_at name point) facts)
-    ; set global *here* and *AG-clock* parameters if name is 'AG:
-    (if (eq name 'AG) (setq *here* point *AG-clock* time-pt))
+    ; set global *here* and *TED-clock* parameters if name is 'TED:
+    (if (eq name 'TED) (setq *here* point *TED-clock* time-pt))
 
     (dolist (p associated-things); the things that 'name' "has"
        (push p facts)
@@ -331,7 +331,7 @@
     
     (dolist (f (remove-duplicates curr-facts :test #'equal)) 
        (push f facts)
-       (when (and (eq name 'AG) (not (eq (second f) 'AG)))
+       (when (and (eq name 'TED) (not (eq (second f) 'TED)))
            (add_tuple_to_hashtable f *extra-initial-knowledge* 'NIL)
        )
     )
@@ -355,11 +355,11 @@
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;; [3] CL-USER(52): (place-object 'Grunt 'sasquatch 'b 0 '((banana Banana1)
 ;;                   (key Key4)) '((hungry Grunt) (likes Grunt Tweety))
-;;                  '((knows Grunt (has AG Banana2))))
+;;                  '((knows Grunt (has TED Banana2))))
 ;;
 ;; (format t "~%~a" (get 'Grunt 'facts))
 ;;
-;; ((KNOWS GRUNT (HAS AG BANANA2)) (LIKES GRUNT TWEETY)
+;; ((KNOWS GRUNT (HAS TED BANANA2)) (LIKES GRUNT TWEETY)
 ;;  (HUNGRY GRUNT) (HAS GRUNT KEY4) (HAS GRUNT BANANA1)
 ;;  (IS_AT GRUNT B) (SASQUATCH GRUNT))
 ;; NIL

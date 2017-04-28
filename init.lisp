@@ -26,11 +26,11 @@
 ;; The following values correspond to the above OCEAN traits, ranging across +/- 1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;(setf (gethash 'O *traits*) 0.0)
-;(setf (gethash 'C *traits*) 0.0)
-;(setf (gethash 'E *traits*) 0.0)
-;(setf (gethash 'A *traits*) 0.0)
-;(setf (gethash 'N *traits*) 0.0)
+(setf (gethash 'O *traits*) 0.5)
+(setf (gethash 'C *traits*) 0.6)
+(setf (gethash 'E *traits*) 0.5)
+(setf (gethash 'A *traits*) 1.0)
+(setf (gethash 'N *traits*) -0.8)
 
 (load "our-world.lisp")
 (initialize-state-node)

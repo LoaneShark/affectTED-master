@@ -527,7 +527,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; The measure of total net utility that AG has gained thus far.
+;; The measure of total net utility that TED has gained thus far.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defparameter *total-value* 0)
 
@@ -837,9 +837,9 @@
 						(list (cons event *real-clock*))))
 			
 			; Log this external event with the current real time of the simulated 
-			; world in *real-history* and *AG-history*.
+			; world in *real-history* and *TED-history*.
 			(push (list event *real-clock*) *real-history*)
-			(push (list event *AG-clock*) *AG-history*)
+			(push (list event *TED-clock*) *TED-history*)
 			(setq *states* (cons new-state (cdr *states*)))
 		)
 	)
@@ -1108,7 +1108,7 @@
 							(setq answer 'NIL)
 							(prog2
 								(setq subj (second wff))
-								(if (eq subj 'AG)
+								(if (eq subj 'TED)
 									(setq answer 'NIL)
 									(if (member subj *visited-objects*)
 										(if (member first-in-wff *occluded-preds*)
@@ -1152,7 +1152,7 @@
 							(setq answer 'T)
 						)
 						((atom third-in-wff)
-							(if (eq subj 'AG)
+							(if (eq subj 'TED)
 								(setq answer (member third-in-wff *visited-objects*))
 								(if is-world-kb
 									(setq answer 'NIL)
@@ -1165,9 +1165,9 @@
 								(setq answer 'T)
 								(if is-world-kb
 									(setq answer 
-										(and (eq subj 'AG) 
+										(and (eq subj 'TED) 
 											 (not (eq 'UNKNOWN (check-fact-in-kb (second third-in-wff) (state-node-wff-htable *curr-state-node*))))))
-									(if (eq subj 'AG)
+									(if (eq subj 'TED)
 										(setq answer (not (eq 'UNKNOWN 
 															  (check-fact-in-kb (second third-in-wff) kb))))
 										(setq answer 'UNKNOWN)
@@ -1179,7 +1179,7 @@
 							(if (eq subj (second (second third-in-wff)))
 								(setq answer (eq 'T (check-fact-in-kb (second third-in-wff) kb is-world-kb)))
 								
-								(if (eq subj 'AG)
+								(if (eq subj 'TED)
 									(prog2
 										(setq answer (eq 'T (check-fact-in-kb (second third-in-wff) kb is-world-kb)))
 										(when is-world-kb
@@ -1240,12 +1240,12 @@
 		(when (eq is_actual 't)
 			(if (eq ans 'UNKNOWN)
 				(prog2	(verbalize ans wf)
-						(format t "~%~%For the question ~a, AG does not currently know the answer as it may be about an occluded property of a local object or about a non-local object.~%" wf)
+						(format t "~%~%For the question ~a, TED does not currently know the answer as it may be about an occluded property of a local object or about a non-local object.~%" wf)
 					
 				)
 				(prog2	(verbalize ans)
 						(when (not is-world-kb)
-							(format t "~%For the question ~a, according to AG's current knowledge base, AG offers the answer above.~%" wf)
+							(format t "~%For the question ~a, according to TED's current knowledge base, TED offers the answer above.~%" wf)
 						)
 				)
 			)
@@ -1293,8 +1293,8 @@
 						(prog2
 							(verbalize 'UNKNOWN wff 'T)
 							(if (eq is_negated 'NIL)
-								(format t "~%~%For the question ~a, there are no positive instances that AG knows of, so AG assumes nothing as the answer.~%" wf);;(setq result-wffs '(not (knows (AG the-answer))))
-								(format t "~%~%For the question ~a, there are no positive instances that AG knows of, so AG assumes everything as the answer.~%" wf)
+								(format t "~%~%For the question ~a, there are no positive instances that TED knows of, so TED assumes nothing as the answer.~%" wf);;(setq result-wffs '(not (knows (TED the-answer))))
+								(format t "~%~%For the question ~a, there are no positive instances that TED knows of, so TED assumes everything as the answer.~%" wf)
 							)
 						)
 						(if (eq is_negated 'NIL)
@@ -1309,8 +1309,8 @@
 						(MAPCAR #'(LAMBDA (ELEMENT) (VERBALIZE ELEMENT)) result-wffs)
 						(if is_agent_kb
 							(if (eq is_negated 'NIL)
-								(format t "~%For the question ~a, other than the above positive instance(s) that AG knows of, AG assumes nothing else as the answer.~%" wf) ;(setq result-wffs '(not (knows (AG the-answer))))
-								(format t "~%For the question ~a, other than the above positive instance(s) that AG knows of, AG assumes everything else as the answer.~%" wf)
+								(format t "~%For the question ~a, other than the above positive instance(s) that TED knows of, TED assumes nothing else as the answer.~%" wf) ;(setq result-wffs '(not (knows (TED the-answer))))
+								(format t "~%For the question ~a, other than the above positive instance(s) that TED knows of, TED assumes everything else as the answer.~%" wf)
 							)
 							(if (eq is_negated 'NIL)
 								(format t "~%For the question ~a, other than the above positive instance(s), nothing else is the answer.~%" wf)
@@ -1346,11 +1346,11 @@
 ;; the user, using functions like `tell', `ask-yn', and `ask-wh'.  An 
 ;; acceptable input is a list of zero or more sublists, with each sublist 
 ;; being one of function calls `tell', `ask-yn', and `ask-wh'. If the user 
-;; has no input to impart to AG, then the user should simply enter () 
+;; has no input to impart to TED, then the user should simply enter () 
 ;; without quotes at the prompt and then hit the enter key.  Otherwise, 
-;; an example user input would be ((ask-yn (AG is_tired )) 
-;; (ask-wh (AG likes ?wh)) (tell (USER is_thankful_to AG))) with 
-;; no quotes. USER and AG are the default subjects or objects in the input.
+;; an example user input would be ((ask-yn (TED is_tired )) 
+;; (ask-wh (TED likes ?wh)) (tell (USER is_thankful_to TED))) with 
+;; no quotes. USER and TED are the default subjects or objects in the input.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; Daphne: Revised 10/9/2012 to handle new representation of terms
@@ -1361,19 +1361,19 @@
 		  user-input-intention
 		  (new-wff-htable (state-node-wff-htable *curr-state-node*))
 		 )
-		(format t "You're welcome to ask AG a question or tell it a fact.~%")
+		(format t "You're welcome to ask TED a question or tell it a fact.~%")
 		(setq user-input (read))
 		(setq user-input (mapcar #'(lambda(y) (list (first y) (parseIntoPred (second y)))) user-input))
 		(when (and (listp user-input) (not (null user-input)))
 			(dolist (i user-input)
 				(cond 
 					((eq 'ask-yn (car i))
-						(setq user-input-intention (list 'wants 'USER (list 'that (list 'tells 'AG 'USER (list 'whether (second i))))))
+						(setq user-input-intention (list 'wants 'USER (list 'that (list 'tells 'TED 'USER (list 'whether (second i))))))
 						(push user-input-intention lst)
 						(push (list 'not user-input-intention) neglst)
 					)
 					((eq 'ask-wh (car i))   
-						(setq user-input-intention (list 'wants 'USER (list 'that (list 'tells 'AG 'USER (list 'answer_to_whq (second i))))))
+						(setq user-input-intention (list 'wants 'USER (list 'that (list 'tells 'TED 'USER (list 'answer_to_whq (second i))))))
 						(push user-input-intention lst)
 						(push (list 'not user-input-intention) neglst)
 					)
@@ -1439,10 +1439,10 @@
 ;; Function peer-into-state takes input arg ques of the form '(YNQ wff) or 
 ;; '(WHQ wff) where wff is a well-formed formula.  For ques of the first 
 ;; form, the function returns a well-formed formula indicating whether wff
-;; is currently in AG's mental state, under the closed world assumption.  
+;; is currently in TED's mental state, under the closed world assumption.  
 ;; For ques of the second form, the function returns a collection of 
 ;; well-formed formula(s) answering the wh-question wff by checking against
-;; AG's mental state, under the closed world assumption. Also, the response 
+;; TED's mental state, under the closed world assumption. Also, the response 
 ;; is translated into an English sentence(s) and printed. This top-level 
 ;; function can be invoked directly at the prompt by the user.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1491,7 +1491,7 @@
 (defun verbalize (wff &OPTIONAL (input-wff 'NIL) &OPTIONAL (print-var 'NIL))
 ;(format t "input-wff verbalize is ~a ~%" input-wff)
 	(if (and (eq wff 'UNKNOWN) (not (null input-wff)))
-		(format t "~%~%~A~%" (concatenate 'string "AG DOES NOT KNOW WHETHER " (simplifyString input-wff print-var)))
+		(format t "~%~%~A~%" (concatenate 'string "TED DOES NOT KNOW WHETHER " (simplifyString input-wff print-var)))
 		(format t "~%~%~A~%" (simplifyString wff))
 	)
 ); end of verbalize
@@ -1508,7 +1508,7 @@
 		
 ;(format t "wff simplify-string is ~a ~a ~%" wff print-var)		
 		(if (eq 'T print-var)
-			(setq answer (verbalize-wff 'NIL (replaceVarWithAnything wff 'ANYTHING-non-AG) 'T)) 
+			(setq answer (verbalize-wff 'NIL (replaceVarWithAnything wff 'ANYTHING-non-TED) 'T)) 
 			(setq answer (verbalize-wff 'NIL wff 'T)) 
 		)
 
@@ -1538,8 +1538,8 @@
 ;; the list arg result, and prints it on the screen. This function is 
 ;; called only by function verbalize.
 ; Example:
-; > (verbalize-wff '() '(is_at AG (the_pt+units_from+towards+on_road? ?d ?x ?y ?z)))
-; > (AG IS AT THE PT D UNITS FROM X TOWARDS Y ON ROAD Z)
+; > (verbalize-wff '() '(is_at TED (the_pt+units_from+towards+on_road? ?d ?x ?y ?z)))
+; > (TED IS AT THE PT D UNITS FROM X TOWARDS Y ON ROAD Z)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun verbalize-wff (result wff right-after-that-whether)	
 	(cond	((null wff)
