@@ -9,7 +9,7 @@ The architecture of our emotional agent, ```TED```, is twofold. First, we define
 
 ## Implementation
 
-The personality traits for ```TED``` are first defined in the hash table ```*traits*```, defined in ```gridworld-definitions.lisp```. Later on in our world, ```our-world.lisp```, we use the values of this hash table to set facts for ```TED```, ```is_open_to_degree``` , ```is_conscientious_to_degree```, ```is_extroverted_to_degree```, etc., so that the personality traits can be later referenced by actions. A fact is also given to ```TED``` concerning his emotional valence, namely ```is_happy_to_degree```.
+The personality traits for ```TED``` are first defined in the hash table ```*traits*```, defined in ```gridworld-definitions.lisp```. Later on in our world, ```our-world.lisp```, we use the values of this hash table to set facts for ```TED```, ```is_open_to_degree```, ```is_conscientious_to_degree```, ```is_extroverted_to_degree```, etc., so that the personality traits can be later referenced by actions. A fact is also given to ```TED``` concerning his emotional valence, namely ```is_happy_to_degree```.
 
 Many actions were then rewritten (or newly written) to depend on the personality traits and to influence the emotional state. For example,
 ```lisp
